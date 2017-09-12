@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gràfics en temps real via websocket</title>
+</head>
+<body>
+<canvas id="mycanvas" width="800" height="400"></canvas><br>
+<label for="val1">Val 1: <input type="number" id="val1" readonly></label>
+<label for="val2">Val 2: <input type="number" id="val2" readonly></label><br>
+<textarea id="linies" cols="80"></textarea><br>
+<button onclick="stop()">Stop</button>
+<button onclick="start()">Start</button>
+<script src="vendor/smoothie.js"></script>
+<script>
+
+    var inputVal1 = document.getElementById('val1'),
+        inputVal2 = document.getElementById('val2'),
+        inputLinia = document.getElementById('linies');
+
+    // Canvas \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+    var smoothie = new SmoothieChart({
+        grid: {
+            strokeStyle: 'rgb(0, 125, 0)',
+            fillStyle: 'rgb(0, 60, 0)',
+            lineWidth: 1,
+            millisPerLine: 250,
+            verticalSections: 6,
+        },
+        maxValue: 1,
+        minValue: -1,
+    });
+    smoothie.streamTo(document.getElementById('mycanvas'));
+    var line1 = new TimeSeries();
+    var line2 = new TimeSeries();
+    smoothie.addTimeSeries(line1, {
+        strokeStyle:'rgb(0, 255, 0)',
+        lineWidth:1
+    });
+    smoothie.addTimeSeries(line2, {
+        strokeStyle:'rgb(255, 0, 255)',
+        lineWidth:1
+    });
+
+    // WebSocket \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+    var socket = new WebSocket('ws://localhost:3001/');
+    socket.onopen = (event) => {
+        console.log('open')
+    };
+    socket.onmessage = (message) => {
+        // FORMAT: timestamp,val1,val2
+        var split = message.data.split(',');
+        inputLinia.value = message.data;
+        var t = new Date().getTime();
+        line1.append(split[0], split[1]);
+        line2.append(split[0], split[2]);
+        inputVal1.value = split[1];
+        inputVal2.value = split[2];
+    };
+
+    function stop() {
+        smoothie.stop();
+    }
+
+    function start() {
+        smoothie.start();
+    }
+</script>
+</body>
+</html>

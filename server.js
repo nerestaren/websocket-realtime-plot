@@ -15,6 +15,8 @@ app.listen(3000, () => {
 
 });
 
+let i = new Date().getTime();
+
 const wss = new WebSocket.Server({ port: 3001 });
 wss.on('connection', (ws) => {
     ws.on('message', (message) => {
@@ -35,12 +37,16 @@ let clients = [];
 function sendData() {
     clients.forEach(ws => {
         if (ws.readyState === ws.OPEN) {
-            let currentTime = new Date().getTime();
+            /*let currentTime = new Date().getTime();
             let timeForFunctions = currentTime / (Math.PI * 1000);
-            ws.send(currentTime + ',' + Math.sin(timeForFunctions) + ',' + Math.cos(timeForFunctions));
+            ws.send(currentTime + ',' + Math.sin(timeForFunctions) + ',' + Math.cos(timeForFunctions));*/
             //ws.send(Math.sin(timeForFunctions) + ',' + Math.cos(timeForFunctions));
+
+            let time = new Date().getTime();
+            let valor = (Math.floor(time / 1000) % 2) === 0 ? -.5 : .5;
+            ws.send(time + ',' + valor + ',' + 0);
         }
     });
 }
 
-setInterval(sendData, 5);
+setInterval(sendData, 30);
